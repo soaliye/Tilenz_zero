@@ -3,61 +3,41 @@
 #include <ThreeWire.h>
 #include <LiquidCrystal_I2C.h>
 #include <RtcDS1302.h>
+#include "src/config/Config.h"
 
-#define SELECT_PIN 18
-#define LEFT_PIN 19
-#define RIGHT_PIN 23
-#define BUZZER_PIN 13
-#define LED_PIN 2
+// ----------------| FUNCTION PROTOTYPES
+void show(String main, int colMain, String content, int colContent);
 
-#define RTC_CLK 12
-#define RTC_DATA 14
-#define RTC_RST 27
-
-const unsigned long baudRate = 115200;
-const uint8_t displayAddress = 0x27;
-const short width = 16;
-const short height = 2;
 bool displayFound = false; 
 
-LiquidCrystal_I2C Display(displayAddress, width, height);
-
+// ----------------| HARDWARE OBJECTS
+LiquidCrystal_I2C Display(LCD_ADDR, LCD_COLS, LCD_ROWS);
 ThreeWire thisWire(RTC_DATA, RTC_CLK, RTC_RST);
 RtcDS1302<ThreeWire> thisClock(thisWire);
-RtcDateTime now;
-char dateTimeBuffer[17];
+
+// ----------------| FreeRTOS TASK HANDLES
 TaskHandle_t DisplayDateTimeHandle = NULL;
 TaskHandle_t LEDTaskHandle = NULL;
 
-void show(String main, int colMain, String content, int colContent);
 
+// ----------------| HOLDERS
+RtcDateTime now;
+char dateTimeBuffer[17];
+
+
+// ----------------| SETUP
 void setup() {
-  // put your setup code here, to run once:
-
-  // -----------| SERIAL
-  Serial.begin(baudRate);
-
-  // -----------| DISPLAY
-  //Wire.beginTransmission(displayAddress);
-  //volatile uint8_t status = Wire.endTransmission();
-  //displayFound = (status == 0);
+  Serial.begin(BAUD_RATE);
   Display.init();
   Display.backlight();
-  /*
-  if(displayFound){
-    Display.init();
-    Display.backlight();
-  }else{
-    while(1);
-  }
-  */
+
   pinMode(SELECT_PIN, INPUT_PULLUP);
   pinMode(LEFT_PIN, INPUT_PULLUP);
   pinMode(RIGHT_PIN, INPUT_PULLUP);
   pinMode(BUZZER_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
 
-  show("TILENZ V0", 0, "YOUR TIME AUDIT", 0);
+  show(DEVICE_NAME, 0, DEVICE_SLOGAN, 0);
 
   // Init and Set Date & Time
   thisClock.Begin();
@@ -83,8 +63,8 @@ void setup() {
   // ------------------| SYSTEM LOGS
   delay(500);
   Serial.println("--------------------- SYSTEM LOGS ------------------------");
-  Serial.printf("tilenz@zero: SERIAL BAUD RATE = %ul\n", baudRate);
-  Serial.printf("tilenz@zero: I2C ADDRESS = 0x%02X\n", displayAddress);
+  Serial.printf("tilenz@zero: SERIAL BAUD RATE = %ul\n", BAUD_RATE);
+  Serial.printf("tilenz@zero: I2C ADDRESS = 0x%02X\n", LCD_ADDR);
   Serial.printf("tilenz@zero: DISPLAY FOUND = %s\n", displayFound? "True":"False");
   Serial.println("\n");
   delay(500);
@@ -96,7 +76,6 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
 }
 
 void tick(){
@@ -112,29 +91,24 @@ void show(String main, int colMain, String content, int colContent){
   Display.print(content);
 }
 
-void LEDBlink(void *parameters){
-  for(;;){
-    digitalWrite(LED_PIN, HIGH);
-    vTaskDelay(200);
-    digitalWrite(LED_PIN, LOW);
-    vTaskDelay(200);
-  }
-}
 
-
-void ShowDate(void *parameters){
-  for(;;){
+void ShowDate(void *parameters) {
+  for(;;) {
     now = thisClock.GetDateTime();
     
-    dateTimeBuffer[17]; 
     snprintf(dateTimeBuffer, sizeof(dateTimeBuffer), "%02u/%02u/%04u %02u:%02u", 
-            now.Day(), now.Month(), now.Year(), 
-            now.Hour(), now.Minute()
-            );
+            now.Day(), now.Month(), now.Year(), now.Hour(), now.Minute());
 
-    // Display on the second line
     Display.setCursor(0, 1);
     Display.print(dateTimeBuffer);
+
+    vTaskDelay(pdMS_TO_TICKS(1000)); 
   }
 }
 
+void LEDBlink(void *parameters) {
+  for(;;) {
+    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+    vTaskDelay(pdMS_TO_TICKS(200)); 
+  }
+}
