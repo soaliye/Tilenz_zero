@@ -6,6 +6,7 @@
 // --------------| DEVICE INFORMATION
 #define DEVICE_NAME     "TILENZ"
 #define DEVICE_SLOGAN   "YOUR TIME AUDIT"
+#define SYSTEM_PROMPT   "tilenz@zero: "
 
 // --------------| SYSTEM SETTINGS
 constexpr uint32_t BAUD_RATE = 115200;
