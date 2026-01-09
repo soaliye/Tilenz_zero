@@ -89,16 +89,6 @@ void tick(){
 }
 
 /*
-void show(String main, int colMain, String content, int colContent){
-  int tab = 16 - main.length();
-  lcd.clear();
-  lcd.setCursor(tab > 0? tab:0, 0);
-  lcd.print(main);
-  lcd.setCursor(colContent, 1);
-  lcd.print(content);
-}
-
-
 void ShowDate(void *parameters) {
   for(;;) {
     now = thisClock.GetDateTime();
