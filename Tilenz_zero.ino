@@ -93,11 +93,23 @@ void tick(){
 }
 
 void DisplayDriver(void *parameters){
-  for(;;){
-    LCDisplay.clear();
-    LCDisplay.display(0, app->getMain(), 'l');
-    LCDisplay.display(1, app->getOption(), 'r');
+  String lastL0 = "";
+  String lastL1 = "";
 
-    vTaskDelay(pdMS_TO_TICKS(200)); 
+  for(;;){
+    if (app != nullptr) {
+      String currentL0 = app->getMain();
+      String currentL1 = app->getOption();
+
+      // ONLY update the screen if the text actually changed
+      if (currentL0 != lastL0) {
+          LCDisplay.display(0, currentL0, 'r');
+          lastL0 = currentL0;
+      }
+      if (currentL1 != lastL1) {
+          LCDisplay.display(1, currentL1, 'l');
+          lastL1 = currentL1;
+      }
+    }
   }
 }

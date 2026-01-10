@@ -5,31 +5,37 @@
 #include "Display.h"
 
 
-void Display::display(uint8_t line, String content, char justify){
-    // Check for legality
-    if(line >= LCD_ROWS || line < 0){
-        // System Prompt
-        Serial.print(SYSTEM_PROMPT);
-        Serial.println("Can't display on this line.");
-        return;
-    }
 
-    // Fitting
+void Display::display(uint8_t line, String content, char justify) {
+    if(line >= LCD_ROWS) return;
+
+    char lineBuffer[LCD_COLS + 1]; 
+    
+    // Fill the buffer
+    memset(lineBuffer, ' ', LCD_COLS);
+    lineBuffer[LCD_COLS] = '\0';
+
     uint8_t length = content.length();
-    uint8_t tab = (LCD_COLS - length) / 2;
+    if (length > LCD_COLS) length = LCD_COLS; // Truncate if too long
 
-    // Justify
-    if(justify == 'c' && length <= LCD_COLS){
-        myLCD.setCursor(tab, line);
-    }else if(justify == 'l' && length <= LCD_COLS){
-        myLCD.setCursor(LCD_COLS - length, line);
-    }else{
-        myLCD.setCursor(0, line);
+    // Justification
+    uint8_t startPos = 0;
+    if (justify == 'c') {
+        startPos = (LCD_COLS - length) / 2;
+    } else if (justify == 'r') {
+        startPos = LCD_COLS - length;
+    } else {
+        startPos = 0; // Left align
     }
 
-    // Print
-    myLCD.print(content);
+    // Copy
+    memcpy(lineBuffer + startPos, content.c_str(), length);
+
+    // Printe
+    myLCD.setCursor(0, line);
+    myLCD.print(lineBuffer); 
 }
+
 
 void Display::clear(){
     myLCD.clear();
