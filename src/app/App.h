@@ -6,16 +6,13 @@
 #ifndef T_APP
 #define T_APP
 
-#include <Arduino/h>
+#include <Arduino.h>
 
 class App{
     private:
-        String name;
     public:
-        App(String appName);
-        uint8_t eventHandler(char event);
-        ~App();
+        virtual String getMain() = 0;
+        virtual String getOption() = 0;
 };
-
 
 #endif

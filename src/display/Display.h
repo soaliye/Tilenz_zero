@@ -16,6 +16,7 @@ class Display{
     public:
         Display(LiquidCrystal_I2C& lcd): myLCD(lcd){}
         void display(uint8_t, String, char);
+        void clear();
         ~Display();
 };
 

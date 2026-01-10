@@ -5,28 +5,32 @@
 #include <RtcDS1302.h>
 #include "src/config/Config.h"
 #include "src/display/Display.h"
+#include "src/app/App.h"
+#include "src/homeapp/HomeApp.h"
 
 // ----------------| FUNCTION PROTOTYPES
-//void show(String main, int colMain, String content, int colContent);
 
-bool displayFound = false; 
+
 
 // ----------------| HARDWARE OBJECTS
 LiquidCrystal_I2C lcd(LCD_ADDR, LCD_COLS, LCD_ROWS);
 ThreeWire thisWire(RTC_DATA, RTC_CLK, RTC_RST);
 RtcDS1302<ThreeWire> thisClock(thisWire);
 
+// ----------------| SHARED DATA
+RtcDateTime now;
+char dateTimeBuffer[17];
+String username = "Tilenx";
+bool displayFound = false; 
+
 // ----------------| OBJECTS
 Display LCDisplay(lcd);
 
+HomeApp *homeApp = new HomeApp(thisClock, username);
+App *app = homeApp;
+
 // ----------------| FreeRTOS TASK HANDLES
-//TaskHandle_t DisplayDateTimeHandle = NULL;
-//TaskHandle_t LEDTaskHandle = NULL;
-
-
-// ----------------| HOLDERS
-RtcDateTime now;
-char dateTimeBuffer[17];
+TaskHandle_t DisplayHandle = NULL;
 
 
 // ----------------| SETUP
@@ -76,8 +80,8 @@ void setup() {
   delay(500);
 
   // ------------------| TASKS
-  //xTaskCreatePinnedToCore(ShowDate, "Show DateTime", 10000, NULL, 1, &DisplayDateTimeHandle, 1);
-  //xTaskCreatePinnedToCore(LEDBlink, "LED Blink", 4000, NULL, 1, &LEDTaskHandle, 0);
+  xTaskCreatePinnedToCore(DisplayDriver, "Display Driver", 20000, NULL, 1, &DisplayHandle, 1);
+
 }
 
 void loop() {
@@ -88,25 +92,12 @@ void tick(){
   tone(BUZZER_PIN, 1000, 20);
 }
 
-/*
-void ShowDate(void *parameters) {
-  for(;;) {
-    now = thisClock.GetDateTime();
-    
-    snprintf(dateTimeBuffer, sizeof(dateTimeBuffer), "%02u/%02u/%04u %02u:%02u", 
-            now.Day(), now.Month(), now.Year(), now.Hour(), now.Minute());
+void DisplayDriver(void *parameters){
+  for(;;){
+    LCDisplay.clear();
+    LCDisplay.display(0, app->getMain(), 'l');
+    LCDisplay.display(1, app->getOption(), 'r');
 
-    lcd.setCursor(0, 1);
-    lcd.print(dateTimeBuffer);
-
-    vTaskDelay(pdMS_TO_TICKS(1000)); 
-  }
-}
-
-void LEDBlink(void *parameters) {
-  for(;;) {
-    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
     vTaskDelay(pdMS_TO_TICKS(200)); 
   }
 }
-*/

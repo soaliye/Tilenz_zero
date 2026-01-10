@@ -5,7 +5,7 @@
 
 // --------------| DEVICE INFORMATION
 #define DEVICE_NAME     "TILENZ"
-#define DEVICE_SLOGAN   "YOUR TIME AUDIT"
+#define DEVICE_SLOGAN   "GIVING CONTROL"
 #define SYSTEM_PROMPT   "tilenz@zero: "
 
 // --------------| SYSTEM SETTINGS
