@@ -36,11 +36,6 @@ void Display::display(uint8_t line, String content, char justify) {
     myLCD.print(lineBuffer); 
 }
 
-
-void Display::clear(){
-    myLCD.clear();
-}
-
 Display::~Display(){
     // System Prompt
     Serial.print(SYSTEM_PROMPT);
